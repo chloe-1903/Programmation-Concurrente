@@ -12,6 +12,7 @@
 #include "Main.h"
 #include "Affichage.h"
 #include "Operation.h"
+#include <math.h>
 
 //Temperatures predefinies
 float TEMP_FROID = 0;
@@ -34,14 +35,15 @@ struct rusage r_usage;
 int main(int argc, char *argv[]) {
 
     //Variables des differentes options recupere en entree
-    int *s = malloc (sizeof(int));
-    int tailleS;
+    int s[10];
+    int tailleS = 3;
     int it = 10000;
-    int *e = malloc (sizeof(int));
-    int tailleE;
-    int *t = malloc (sizeof(int));
-    int tailleT;
-    int m = 0 , a = 0, M = 0; //Booleen a faux
+    int e[10];
+    int tailleE = 6;
+    int t[10];
+    int tailleT = 2;
+    int m = 1; //Booleen a true
+    int a = 0, M = 0; //Booleen a faux
     //Tableau de char pour decouper les options
     char tmp[1];
 
@@ -49,6 +51,15 @@ int main(int argc, char *argv[]) {
     int optch;
     extern char * optarg;
     extern int optind, opterr;
+
+    //Initialisation des variables de parametre aux valeur par defaut
+    s[0] = 0; s[1] = 2; s[2] = 4;
+    t[0] = 1; t[1] = 3;
+
+    //On met 012345 dans e comme option
+    for(int i=0; i < tailleE; i++) {
+        e[i] = i;
+    }
 
     //Recuperation des options
     while ((optch = getopt(argc, argv, "s:mMai:e:t:")) != -1)
@@ -98,12 +109,35 @@ int main(int argc, char *argv[]) {
         if(e[i] == 0) {
 
             //Appel de la fonction lancement
-            lancement(tailleS, s, it, a, m, M);
+            if (lancement(tailleS, s, it, a, m, M) != 0) {
+                printf("Erreur dans la fonction lancement\n");
+                return -1;
+            }
 
         }
 
-    }
+        if(e[i] == 1) {
 
+            /*
+            //TODO gerer option t
+
+            int aaa = pow(4,t[0]);
+            int tab[aaa+1];
+
+            n = 4 + s[i];
+            taille = 2<<(n-1);
+
+            decouper(taille, aaa, (int*)tab);
+
+
+            for (int i =0; i< aaa; i++) {
+                printf("%d\n", tab[i]);
+            }
+
+            lancementThread(taille, it, a, n, TEMP_FROID, TEMP_CHAUD, aaa, tab);
+             */
+        }
+    }
 
     return 0;
 }
@@ -130,15 +164,23 @@ int lancement(int tailleS, int s[], int it, int a, int m, int M) {
         //On gere l'option m et M
         if(m || M){
             //on fait 10x la scenario pour avoir une moyenne du temps (on enleve les deux extremes)
-            lancerUnScenario(taille, it, a, n, TEMP_FROID, TEMP_CHAUD, &temps[0], &temps2[0]);
+           if( lancerUnScenario(taille, it, a, n, TEMP_FROID, TEMP_CHAUD, &temps[0], &temps2[0]) != 0) {
+               printf("Erreur dans la fonction lancerUnScenario\n");
+               return -1;
+           }
+
             float min=temps[0];
             float max=temps[0];
 
             float min2=temps2[0];
             float max2=temps2[0];
 
-            for (int j=1; j<10; j++){
-                lancerUnScenario(taille, it, 0,  n , TEMP_FROID, TEMP_CHAUD, &temps[j], &temps2[j]);//a =0 car on ne veut pas l'afficher a chaque fois
+            for (int j=0; j<10; j++){
+                //a =0 car on ne veut pas l'afficher a chaque fois
+                if ( lancerUnScenario(taille, it, 0,  n , TEMP_FROID, TEMP_CHAUD, &temps[j], &temps2[j]) != 0) {
+                    printf("Erreur dans la fonction lancerUnScenario\n");
+                    return -1;
+                }
                 if (temps[j]>max)
                     max=temps[j];
                 if (temps[j]<min)
@@ -157,7 +199,6 @@ int lancement(int tailleS, int s[], int it, int a, int m, int M) {
             int cmpt2=0;
 
             for (int j = 0; j < 10; ++j){
-                //printf("temps[i]: %f\n", temps[j]);
                 if(temps[j]!=max && temps[j]!=min){
                     somme+=temps[j];
                     cmpt++;
@@ -186,7 +227,11 @@ int lancement(int tailleS, int s[], int it, int a, int m, int M) {
             }
 
         } else {
-            lancerUnScenario(taille, it, a,  n ,TEMP_FROID, TEMP_CHAUD, &temps[0], &temps2[0]);
+
+            if (lancerUnScenario(taille, it, a,  n ,TEMP_FROID, TEMP_CHAUD, &temps[0], &temps2[0]) != 0) {
+                printf("Erreur dans la fonction lancerUnScenario\n");
+                return -1;
+            }
 
         }
 
@@ -204,8 +249,16 @@ int lancement(int tailleS, int s[], int it, int a, int m, int M) {
  * @author Lucas
  */
 int lancerUnScenario(int taille, int it, int a, int n, float TEMP_FROID, float TEMP_CHAUD, float *temps, float *temps2){
-    //Matrice
-    float matrice[taille][taille];
+
+    //creation de la matrice
+    float **matrice;
+    matrice = (float * *) malloc( taille * sizeof( float * ) ) ; 
+    if ( matrice==NULL ) return -1 ; 
+
+    for ( int i = 0 ; i < taille ; i++ ) { 
+      matrice[i] = ( float * ) malloc( taille * sizeof(float) ) ; 
+      if ( matrice[i]==NULL ) return -1; ; 
+   }
 
     //Pour mesurer le temps
     clock_t t1, t2;
@@ -214,24 +267,66 @@ int lancerUnScenario(int taille, int it, int a, int n, float TEMP_FROID, float T
     tt1 = time(NULL);
 
     //On initialise la matrice avec des 0
-    miseAzero((float*)matrice, taille);
+    if (miseAFroid(matrice, taille, TEMP_FROID) != 0) {
+        printf("Erreur dans la fonction miseAFroid\n");
+        return -1;
+    }
 
-    chaufferMilieu((float*)matrice, n, taille, TEMP_CHAUD);
+    //afficherQuart(matrice, taille);
+    if (chaufferMilieu(matrice, n, taille, TEMP_CHAUD) != 0) {
+        printf("Erreur dans la fonction chaufferMilieu\n");
+        return -1;
+    }
 
     //Affiche le quart de la matrice (avant execution) si l'option a est utilisee
     if(a) {
-        afficherQuart((float*)matrice, taille);
+        if (afficherQuart(matrice, taille) != 0) {
+            printf("Erreur dans la fonction afficherQuart\n");
+            return -1;
+        }
     }
 
+        //Matrice temporaire
+    float **tmp;
+    tmp = (float * *) malloc( taille * sizeof( float * ) ) ; 
+        if ( tmp==NULL ) return -1 ; 
+
+    for (int i = 0 ; i < taille ; i++ ) {
+      tmp[i] = ( float * ) malloc( taille * sizeof(float) ) ; 
+      if ( tmp[i]==NULL ) return -1; ; 
+   } 
+
+    MatriceInfo *m;
+    m=(MatriceInfo *)malloc(sizeof(MatriceInfo));
+    m->matrice=matrice;
+    m->taille=taille;
+    m->tmp=tmp;
+    m->TEMP_FROID=TEMP_FROID;
+
+    //Lancement des itérations
     for (int i=1; i <= it; i++) {
-        uneIteration((float*)matrice, taille, TEMP_FROID);
+
+        if(uneIterationV2((void*)m) != 0) {
+            printf("Erreur dans la fonction uneIterationV2\n");
+            return -1;
+        }
         //On remet le centre chaud
-        chaufferMilieu((float*)matrice, n, taille, TEMP_CHAUD);
+        if(chaufferMilieu(matrice, n, taille, TEMP_CHAUD) != 0) {
+            printf("Erreur dans la fonction chaufferMilieu\n");
+            return -1;
+        }
     }
+
+    //On free la matrice temporaire
+    for ( int i = 0 ; i < taille ; ++i ) {free( tmp[i] );} 
+    free( tmp );
 
     //Affiche le quart de la matrice (apres execution) si l'option a est utilisee
     if(a) {
-       afficherQuart((float*)matrice, taille);
+        if(afficherQuart(matrice, taille) != 0) {
+            printf("Erreur dans la fonction afficherQuart\n");
+            return -1;
+        }
     }
 
     //Pour calculer le temps
@@ -239,7 +334,27 @@ int lancerUnScenario(int taille, int it, int a, int n, float TEMP_FROID, float T
     tt2 = time(NULL);
     *temps = (float) (t2 - t1) / CLOCKS_PER_SEC;
     *temps2 = (float) (tt2 - tt1);
+
+    //On free la matrice
+    for (int i = 0 ; i < taille ; ++i ) {free( matrice[i] );} 
+    free( matrice );
+
     return 0;
 }
+
+/*
+int decouper(int taille, int t, int* tab) {
+
+    tab[0] = 0;
+
+    int tailleParThread = taille / t;
+
+    for(int i = 1; i < t ; i++) {
+        tab[i] = tab[i-1] + tailleParThread;
+    }
+
+    return 0;
+}
+ */
 
 
