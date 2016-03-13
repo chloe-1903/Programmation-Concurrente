@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
         if(e[i] == 0) {
 
             //Appel de la fonction lancement
-            if (lancement(tailleS, s, it, a, m, M) != 0) {
+            if (lancement(tailleS, s, it, a, m, M,0) != 0) {
                 printf("Erreur dans la fonction lancement\n");
                 return -1;
             }
@@ -119,24 +119,13 @@ int main(int argc, char *argv[]) {
 
         if(e[i] == 1) {
 
-            /*
-            //TODO gerer option t
-
-            int aaa = pow(4,t[0]);
-            int tab[aaa+1];
-
-            n = 4 + s[i];
-            taille = 2<<(n-1);
-
-            decouper(taille, aaa, (int*)tab);
-
-
-            for (int i =0; i< aaa; i++) {
-                printf("%d\n", tab[i]);
+            for (i= 0; i < tailleT; i++) {
+                //Appel de la fonction lancement
+                if (lancement(tailleS, s, it, a, m, M, t[i]) != 0) {
+                    printf("Erreur dans la fonction lancement\n");
+                    return -1;
+                }
             }
-
-            lancementThread(taille, it, a, n, TEMP_FROID, TEMP_CHAUD, aaa, tab);
-             */
         }
     }
 
@@ -149,7 +138,7 @@ int main(int argc, char *argv[]) {
  * Lance la fonction lancerUnScenario en prenant en compte le parametre -m
  * @author Chloe
  */
-int lancement(int tailleS, int s[], int it, int a, int m, int M) {
+int lancement(int tailleS, int s[], int it, int a, int m, int M, int t) {
 
     //On gere l'option -s
     int i,j;
@@ -166,7 +155,7 @@ int lancement(int tailleS, int s[], int it, int a, int m, int M) {
         //On gere l'option m et M
         if(m || M){
             //on fait 10x la scenario pour avoir une moyenne du temps (on enleve les deux extremes)
-           if( lancerUnScenario(taille, it, a, n, TEMP_FROID, TEMP_CHAUD, &temps[0], &temps2[0]) != 0) {
+           if( lancerUnScenario(taille, it, a, n, TEMP_FROID, TEMP_CHAUD, &temps[0], &temps2[0],t) != 0) {
                printf("Erreur dans la fonction lancerUnScenario\n");
                return -1;
            }
@@ -179,7 +168,7 @@ int lancement(int tailleS, int s[], int it, int a, int m, int M) {
 
             for (j=0; j<10; j++){
                 //a =0 car on ne veut pas l'afficher a chaque fois
-                if ( lancerUnScenario(taille, it, 0,  n , TEMP_FROID, TEMP_CHAUD, &temps[j], &temps2[j]) != 0) {
+                if ( lancerUnScenario(taille, it, 0,  n , TEMP_FROID, TEMP_CHAUD, &temps[j], &temps2[j],t) != 0) {
                     printf("Erreur dans la fonction lancerUnScenario\n");
                     return -1;
                 }
@@ -230,7 +219,7 @@ int lancement(int tailleS, int s[], int it, int a, int m, int M) {
 
         } else {
 
-            if (lancerUnScenario(taille, it, a,  n ,TEMP_FROID, TEMP_CHAUD, &temps[0], &temps2[0]) != 0) {
+            if (lancerUnScenario(taille, it, a,  n ,TEMP_FROID, TEMP_CHAUD, &temps[0], &temps2[0],t) != 0) {
                 printf("Erreur dans la fonction lancerUnScenario\n");
                 return -1;
             }
@@ -250,7 +239,7 @@ int lancement(int tailleS, int s[], int it, int a, int m, int M) {
  * Lance les operations sur la matrice : chauffe le milieu et effectue la repartition de la chaleur
  * @author Lucas
  */
-int lancerUnScenario(int taille, int it, int a, int n, float TEMP_FROID, float TEMP_CHAUD, float *temps, float *temps2){
+int lancerUnScenario(int taille, int it, int a, int n, float TEMP_FROID, float TEMP_CHAUD, float *temps, float *temps2, t){
 
     //creation de la matrice
     float **matrice;
@@ -298,7 +287,7 @@ int lancerUnScenario(int taille, int it, int a, int n, float TEMP_FROID, float T
     //Lancement des itérations
     for (i=1; i <= it; i++) {
         if(lancerThreads((void*)m, 4) != 0) {
-            printf("Erreur dans la fonction uneIterationV2\n");
+            printf("Erreur dans la fonction LancerThreads\n");
             return -1;
         }
         //On remet le centre chaud
@@ -333,19 +322,6 @@ int lancerUnScenario(int taille, int it, int a, int n, float TEMP_FROID, float T
     return 0;
 }
 
-/*
-int decouper(int taille, int t, int* tab) {
 
-    tab[0] = 0;
-
-    int tailleParThread = taille / t;
-
-    for(int i = 1; i < t ; i++) {
-        tab[i] = tab[i-1] + tailleParThread;
-    }
-
-    return 0;
-}
- */
 
 
