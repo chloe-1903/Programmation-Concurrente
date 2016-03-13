@@ -7,6 +7,5 @@
 
 int afficher(float **matrice, int taille);
 int afficherQuart(float **matrice, int taille);
-int afficherTabInt(int tab[], int taille);
 
 #endif //PROJET_PROG_CONCURRENTE_AFFICHAGE_H

@@ -308,8 +308,6 @@ int lancerUnScenario(int taille, int it, int a, int n, float TEMP_FROID, float T
         }
     }
 
-    //On free la structure
-    free(m);
 
     //Affiche le quart de la matrice (apres execution) si l'option a est utilisee
     if(a) {
@@ -318,6 +316,9 @@ int lancerUnScenario(int taille, int it, int a, int n, float TEMP_FROID, float T
             return -1;
         }
     }
+
+    //On free la structure
+    free(m);
 
     //Pour calculer le temps
     t2 = clock();

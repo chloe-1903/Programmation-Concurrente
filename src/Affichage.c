@@ -46,16 +46,4 @@ int afficherQuart(float **matrice, int taille){
     return 0;
 }
 
-/*
- * Fonction afficherTabInt
- * Affiche un tableau de int (utilite nottament pour verifier si les parametres en entree ont bien ete recupere)
- * @author Lucas*/
-int afficherTabInt(int tab[], int taille) {
-    int i;
-    for(i=0; i < taille; i++) {
-        printf("%d", tab[i]);
-    }
-    printf("\n");
 
-    return 0;
-}
