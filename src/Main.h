@@ -5,8 +5,7 @@
 #ifndef PROJET_PROG_CONCURRENTE_MAIN_H
 #define PROJET_PROG_CONCURRENTE_MAIN_H
 
-int lancement(int tailleS, int s[], int it, int a, int m, int M);
-int lancerUnScenario(int taille, int it, int a, int n, float TEMP_FROID, float TEMP_CHAUD, float *temps, float *temps2);
-int decouper(int taille, int t, int* tab);
+int lancement(int tailleS, int s[], int it, int a, int m, int M, int t);
+int lancerUnScenario(int taille, int it, int a, int n, float TEMP_FROID, float TEMP_CHAUD, float *temps, float *temps2, int t);
 
 #endif //PROJET_PROG_CONCURRENTE_MAIN_H

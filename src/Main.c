@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
         //Iteratif
         if(e[i] == 0) {
 
-            //Appel de la fonction lancement
+            //Appel de la fonction lancement avec 1 thread
             if (lancement(tailleS, s, it, a, m, M,0) != 0) {
                 printf("Erreur dans la fonction lancement\n");
                 return -1;
@@ -239,7 +239,7 @@ int lancement(int tailleS, int s[], int it, int a, int m, int M, int t) {
  * Lance les operations sur la matrice : chauffe le milieu et effectue la repartition de la chaleur
  * @author Lucas
  */
-int lancerUnScenario(int taille, int it, int a, int n, float TEMP_FROID, float TEMP_CHAUD, float *temps, float *temps2, t){
+int lancerUnScenario(int taille, int it, int a, int n, float TEMP_FROID, float TEMP_CHAUD, float *temps, float *temps2, int t){
 
     //creation de la matrice
     float **matrice;
@@ -286,7 +286,7 @@ int lancerUnScenario(int taille, int it, int a, int n, float TEMP_FROID, float T
 
     //Lancement des itérations
     for (i=1; i <= it; i++) {
-        if(lancerThreads((void*)m, 4) != 0) {
+        if(lancerThreads(m, pow(4, t)) != 0) {
             printf("Erreur dans la fonction LancerThreads\n");
             return -1;
         }
@@ -321,7 +321,3 @@ int lancerUnScenario(int taille, int it, int a, int n, float TEMP_FROID, float T
 
     return 0;
 }
-
-
-
-

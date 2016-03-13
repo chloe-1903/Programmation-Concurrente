@@ -54,9 +54,9 @@ int miseAFroid(float **matrice, int taille, float TEMP_FROID) {
  * @author Chloe
  */
 int lancerThreads(MatriceInfo *matInfo, int nbThread){
-    nbThread=64;//à supprimer!!!!
     int taille=matInfo->taille;
 
+    //Identifiants thread
     pthread_t *thread_ids;
     thread_ids=(pthread_t *)malloc(nbThread*sizeof(pthread_t));
     int i, j;
@@ -64,18 +64,27 @@ int lancerThreads(MatriceInfo *matInfo, int nbThread){
         pthread_t thread_id;
         thread_ids[i]= thread_id;
     }
-    pthread_attr_t attr;
+
+    //Barriere
     int ret;
     if(pthread_barrier_init(&barrier,NULL,nbThread)){
-        printf("Could not create a barrier\n");
+        printf("Impossible de creer la barriere\n");
         return -1;
     }
 
+    //Calcul du nombre de cases par thread
     double val= taille * taille / nbThread;
     int nbCaseParThread = sqrt((double)val);
+    if (nbThread>taille){
+        printf("Nombre de thread trop important par rapport a la taille.\n");
+        return -1;
+    }
 
+    //Copies de matInfo pour chaque thread 
     MatriceInfo **copies;
     copies=(MatriceInfo **)malloc(nbThread*sizeof(MatriceInfo*));
+
+    //Appel au thread en creant les copies et ajoutant les bons arguments
     int k=0;
     for(i = 0 ; i<taille ; i += nbCaseParThread){
         for(j = 0 ; j< taille ; j += nbCaseParThread){
@@ -92,26 +101,28 @@ int lancerThreads(MatriceInfo *matInfo, int nbThread){
            // printf("--> Ici je vais de : %d-%d à %d-%d \n", copie1->deb_i, copie1->deb_j, copie1->fin_i, copie1->fin_j);
             ret=pthread_create(&thread_ids[k],NULL,&uneIterationV2,(void*)copie1);
             if(ret!=0) {
-                printf("Unable to create thread");
+                printf("Impossible de creer le thread.\n");
                 return -1;
             }
             k++; 
         }
     }
 
+    //Attentes des autres threads
     for (i=0; i<nbThread;i++){
         if(pthread_join(thread_ids[i],NULL)){
-            printf("Could not join thread %d\n", i);
+            printf("Impossible de joindre le thread.%d\n", i);
             return -1;
         }   
     }
+
+    //destructions de la barriere et liberation memoire 
     pthread_barrier_destroy(&barrier);
     free(thread_ids);
     for (i=0; i<nbThread;i++){
         free(copies[i]);
     }
     free(copies);
-
     return 0;
 }
 
@@ -125,16 +136,13 @@ void *uneIterationV2(void *matInfo) {
     float **matrice=m->matrice;
     int taille=m->taille;
     float TEMP_FROID=m->TEMP_FROID;
-    //printf("Là\n");
 
     //Matrice temporaire
     float **tmp;
     tmp = (float **)malloc(taille*sizeof(float*)) ; 
-    //if ( tmp==NULL ) return -1 ; 
     int i, j;
     for (i = 0 ; i < taille ; i++ ) {
       tmp[i] = ( float * ) malloc( taille * sizeof(float) ) ; 
-      //if ( tmp[i]==NULL ) return -1; ; 
     } 
 
     //Copie de la matrice dans tmp
@@ -244,6 +252,7 @@ void *uneIterationV2(void *matInfo) {
         }
     }
 
+    //attente des autres thread
     int rc=pthread_barrier_wait(&barrier);
     if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
     {
@@ -251,13 +260,10 @@ void *uneIterationV2(void *matInfo) {
         exit(-1);
     }
 
-    //printf("Ici\n");
-    //printf("on copie\n");
     //Copie de la matrice tmp dans celle finale
     for(i=m->deb_i; i< m->fin_i ; i++){
         for(j=m->deb_j; j< m->fin_j ; j++){
             matrice[i][j] = tmp[i][j];
-            //if ( matrice[i][j]!=0) printf("yoo:%f\n", matrice[i][j]);
         }
     }
 
