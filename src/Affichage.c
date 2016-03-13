@@ -15,8 +15,9 @@
  * @author Chloe
  */
 int afficher(float **matrice, int taille){
-    for(int i=0; i< taille ; i++){
-        for(int j=0; j< taille ; j++){
+    int i, j;
+    for(i=0; i< taille ; i++){
+        for(j=0; j< taille ; j++){
             printf("%.2f-", matrice[i][j]);
         }
         printf("\n");
@@ -33,8 +34,9 @@ int afficher(float **matrice, int taille){
  * @author Chloe
  */
 int afficherQuart(float **matrice, int taille){
-    for(int i=0; i< taille/2 ; i++){
-        for(int j=0; j< taille/2 ; j++){
+    int i, j;
+    for(i=0; i< taille/2 ; i++){
+        for(j=0; j< taille/2 ; j++){
             printf("%.2f-", matrice[i][j]);
         }
         printf("\n");
@@ -49,8 +51,8 @@ int afficherQuart(float **matrice, int taille){
  * Affiche un tableau de int (utilite nottament pour verifier si les parametres en entree ont bien ete recupere)
  * @author Lucas*/
 int afficherTabInt(int tab[], int taille) {
-
-    for(int i=0; i < taille; i++) {
+    int i;
+    for(i=0; i < taille; i++) {
         printf("%d", tab[i]);
     }
     printf("\n");

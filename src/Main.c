@@ -57,7 +57,8 @@ int main(int argc, char *argv[]) {
     t[0] = 1; t[1] = 3;
 
     //On met 012345 dans e comme option
-    for(int i=0; i < tailleE; i++) {
+    int i;
+    for(i=0; i < tailleE; i++) {
         e[i] = i;
     }
 
@@ -67,7 +68,7 @@ int main(int argc, char *argv[]) {
             case 's':
                 //On decoupe les differentes tailles de problemes
                 tailleS = strlen(optarg);
-                for(int i=0; i < tailleS; i++) {
+                for(i=0; i < tailleS; i++) {
                     *tmp = optarg[i];
                     s[i] = atoi(tmp);
                 }
@@ -87,7 +88,7 @@ int main(int argc, char *argv[]) {
             case 'e':
                 //On decoupe les differentes etapes a executer
                 tailleE = strlen(optarg);
-                for(int i=0; i < tailleE; i++) {
+                for(i=0; i < tailleE; i++) {
                     *tmp = optarg[i];
                     e[i] = atoi(tmp);
                 }
@@ -95,7 +96,7 @@ int main(int argc, char *argv[]) {
             case 't':
                 //On decoupe les differents nombre de thread a executer
                 tailleT = strlen(optarg);
-                for(int i=0; i < tailleT; i++) {
+                for(i=0; i < tailleT; i++) {
                     *tmp = optarg[i];
                     t[i] = atoi(tmp);
                 }
@@ -103,7 +104,7 @@ int main(int argc, char *argv[]) {
         }
 
     //Regarde dans l'option e quels sont les programmes a executer
-    for (int i= 0; i < tailleE; i++) {
+    for (i= 0; i < tailleE; i++) {
 
         //Iteratif
         if(e[i] == 0) {
@@ -151,7 +152,8 @@ int main(int argc, char *argv[]) {
 int lancement(int tailleS, int s[], int it, int a, int m, int M) {
 
     //On gere l'option -s
-    for (int i=0; i< tailleS; i++) {
+    int i,j;
+    for (i=0; i< tailleS; i++) {
 
         //Variable pour le calcul de temps
         float temps[10];
@@ -175,7 +177,7 @@ int lancement(int tailleS, int s[], int it, int a, int m, int M) {
             float min2=temps2[0];
             float max2=temps2[0];
 
-            for (int j=0; j<10; j++){
+            for (j=0; j<10; j++){
                 //a =0 car on ne veut pas l'afficher a chaque fois
                 if ( lancerUnScenario(taille, it, 0,  n , TEMP_FROID, TEMP_CHAUD, &temps[j], &temps2[j]) != 0) {
                     printf("Erreur dans la fonction lancerUnScenario\n");
@@ -198,7 +200,7 @@ int lancement(int tailleS, int s[], int it, int a, int m, int M) {
             float somme2=0;
             int cmpt2=0;
 
-            for (int j = 0; j < 10; ++j){
+            for (j = 0; j < 10; ++j){
                 if(temps[j]!=max && temps[j]!=min){
                     somme+=temps[j];
                     cmpt++;
@@ -255,10 +257,11 @@ int lancerUnScenario(int taille, int it, int a, int n, float TEMP_FROID, float T
     matrice = (float * *) malloc( taille * sizeof( float * ) ) ; 
     if ( matrice==NULL ) return -1 ; 
 
-    for ( int i = 0 ; i < taille ; i++ ) { 
+    int i,j;
+    for (i = 0 ; i < taille ; i++ ) { 
       matrice[i] = ( float * ) malloc( taille * sizeof(float) ) ; 
       if ( matrice[i]==NULL ) return -1; ; 
-   }
+    }
 
     //Pour mesurer le temps
     clock_t t1, t2;
@@ -286,27 +289,15 @@ int lancerUnScenario(int taille, int it, int a, int n, float TEMP_FROID, float T
         }
     }
 
-        //Matrice temporaire
-    float **tmp;
-    tmp = (float * *) malloc( taille * sizeof( float * ) ) ; 
-        if ( tmp==NULL ) return -1 ; 
-
-    for (int i = 0 ; i < taille ; i++ ) {
-      tmp[i] = ( float * ) malloc( taille * sizeof(float) ) ; 
-      if ( tmp[i]==NULL ) return -1; ; 
-   } 
-
     MatriceInfo *m;
     m=(MatriceInfo *)malloc(sizeof(MatriceInfo));
     m->matrice=matrice;
     m->taille=taille;
-    m->tmp=tmp;
     m->TEMP_FROID=TEMP_FROID;
 
     //Lancement des itérations
-    for (int i=1; i <= it; i++) {
-
-        if(uneIterationV2((void*)m) != 0) {
+    for (i=1; i <= it; i++) {
+        if(lancerThreads((void*)m, 4) != 0) {
             printf("Erreur dans la fonction uneIterationV2\n");
             return -1;
         }
@@ -317,9 +308,8 @@ int lancerUnScenario(int taille, int it, int a, int n, float TEMP_FROID, float T
         }
     }
 
-    //On free la matrice temporaire
-    for ( int i = 0 ; i < taille ; ++i ) {free( tmp[i] );} 
-    free( tmp );
+    //On free la structure
+    free(m);
 
     //Affiche le quart de la matrice (apres execution) si l'option a est utilisee
     if(a) {
@@ -336,7 +326,7 @@ int lancerUnScenario(int taille, int it, int a, int n, float TEMP_FROID, float T
     *temps2 = (float) (tt2 - tt1);
 
     //On free la matrice
-    for (int i = 0 ; i < taille ; ++i ) {free( matrice[i] );} 
+    for (i = 0 ; i < taille ; ++i ) {free( matrice[i] );} 
     free( matrice );
 
     return 0;

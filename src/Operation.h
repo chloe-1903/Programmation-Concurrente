@@ -8,14 +8,18 @@
 typedef struct MatriceInfo MatriceInfo;
 struct MatriceInfo{
     float** matrice;
-    float** tmp;
     int taille;
     float TEMP_FROID;
+    int deb_i;
+    int deb_j;
+    int fin_i;
+    int fin_j;
 };
 
 int chaufferMilieu( float **matrice, int n, int taille, float TEMP_CHAUD);
-int uneIterationV2(void *matInfo);//float **matrice,float **tmp, int taille, float TEMP_FROID);
+void *uneIterationV2(void *matInfo);//float **matrice,float **tmp, int taille, float TEMP_FROID);
 int miseAFroid(float **matrice, int taille, float TEMP_FROID);
-//int lancerThreads(MatriceInfo matInfo, int nbThread);
+int lancerThreads(MatriceInfo *matInfo, int nbThread);
+//lancerThread choisit deb i, deb j...-> pb car on lui passe matInfo sans ces 4 champs?
 
 #endif //PROJET_PROG_CONCURRENTE_OPERATION_H
